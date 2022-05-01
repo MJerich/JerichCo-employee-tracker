@@ -86,8 +86,7 @@ const initPrompt = () => {
         } else if (results.whatToDo === 'add an employee') {
             addEmployeePrompt();
         } else if (results.whatToDo === 'update an employee role') {
-            console.log('add update an employee role')
-            initPrompt();
+            changePrompt();
         } else if (results.whatToDo === 'exit') {
             db.end();
         }
@@ -115,7 +114,7 @@ const addDepartmentPrompt = () => {
         const addDepartmentStr = `
         INSERT INTO departments (department_name)
         VALUES
-            ('${departmentReults.departmentName}')
+            ('${departmentReults.departmentName}');
         `
         // use a sql query to add the new department
         db.query(addDepartmentStr, (error, results, fields) => {
@@ -175,7 +174,7 @@ const addRolePrompt = () => {
         const addRoleStr = `
         INSERT INTO roles (role_title, salary, department_id)
         VALUES
-            ('${roleReults.roleName}', ${roleReults.salary}, ${roleReults.departmentID})
+            ('${roleReults.roleName}', ${roleReults.salary}, ${roleReults.departmentID});
         `
         // use a sql query to add the new department
         db.query(addRoleStr, (error, results, fields) => {
@@ -243,10 +242,55 @@ const addEmployeePrompt = () => {
         const addEmployeeStr = `
         INSERT INTO employees (first_name, last_name, role_id, manager_id)
         VALUES
-            ('${employeeReults.firstName}', '${employeeReults.lastName}', ${employeeReults.roleID}, ${employeeReults.managerID})
+            ('${employeeReults.firstName}', '${employeeReults.lastName}', ${employeeReults.roleID}, ${employeeReults.managerID});
         `
         // use a sql query to add the new department
         db.query(addEmployeeStr, (error, results, fields) => {
+            if (error) {
+                return console.error(error.message);
+            }
+        })
+        initPrompt();
+    })
+};
+
+const changePrompt = () => {
+    return inquirer.prompt([
+        {
+            type: 'number',
+            name: 'employeeID',
+            message: "What is the id of the employee's role you want to update?",
+            validate: nameInput => {
+                if (nameInput) {
+                    return true;
+                } else {
+                    console.log("Please enter the employee's id!");
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'number',
+            name: 'roleID',
+            message: "What is the id of the employee's new role?",
+            validate: nameInput => {
+                if (nameInput) {
+                    return true;
+                } else {
+                    console.log("Please enter the new role's id!");
+                    return false;
+                }
+            }
+        }
+    ])
+    .then(changeReults => {
+        const changeStr = `
+        UPDATE employees 
+        SET role_id = ${changeReults.roleID}
+        WHERE id = ${changeReults.employeeID};
+        `
+        // use a sql query to add the new department
+        db.query(changeStr, (error, results, fields) => {
             if (error) {
                 return console.error(error.message);
             }
